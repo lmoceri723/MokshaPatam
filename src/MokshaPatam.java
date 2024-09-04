@@ -1,3 +1,6 @@
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * Moksha Patam
  * A puzzle created by Zach Blick
@@ -44,7 +47,10 @@ public class MokshaPatam {
         int[] realPaths = formatRealPaths(boardsize, ladders, snakes);
 
         int moves = 0;
-        int currentSquare = 0;
+        Queue<Integer> queue = new LinkedList<>();
+        boolean[] visited = new boolean[boardsize];
+
+        queue.add(1);
 
         /*        PLAN         */
         // Do BFS to find the shortest path
@@ -52,7 +58,34 @@ public class MokshaPatam {
         // The computer then moves to the square that is the sum of the current square and the number chosen
         // And then the computer checks if the square it landed on is a snake or a ladder using the realPaths array
 
+        int queueSize = queue.size();
 
+        while (!(queue.isEmpty())) {
+            // If queueSize is zero, the computer has finished a turn
+            if (queueSize == 0) {
+                moves++;
+                // Reset the queueSize to the new size of the queue
+                queueSize = queue.size();
+            }
 
+            // Decrease the queueSize and remove the current square from the queue
+            queueSize--;
+            int currentSquare = queue.remove();
+
+            // Add all possible moves to the queue
+            for (int i = 1; i <= 6; i++) {
+                // Adds the square to the queue if it hasn't been visited
+                if (currentSquare + i < boardsize && !visited[currentSquare + i]) {
+                    queue.add(realPaths[currentSquare + i]);
+                    visited[currentSquare + i] = true;
+                }
+                // Ends the game if the computer lands on the last square
+                else if (currentSquare + i == boardsize) {
+                    return moves + 1;
+                }
+            }
+        }
+
+        return -1;
     }
 }
