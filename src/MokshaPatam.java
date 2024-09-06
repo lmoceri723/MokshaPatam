@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -23,12 +24,12 @@ public class MokshaPatam {
 
         // Add all snakes to realPaths
         for (int i = 0; i < ladders.length; i++) {
-            realPaths[ladders[i][0]] = ladders[i][1];
+            realPaths[ladders[i][0]] = ladders[i][1] - 1;
         }
 
         // Add all ladders to realPaths
         for (int i = 0; i < snakes.length; i++) {
-            realPaths[snakes[i][0]] = snakes[i][1];
+            realPaths[snakes[i][0]] = snakes[i][1] - 1;
         }
 
         // Add all normal squares to realPaths
@@ -46,44 +47,35 @@ public class MokshaPatam {
         // Format snakes and ladders into a single array to reduce the search time to O(1)
         int[] realPaths = formatRealPaths(boardsize, ladders, snakes);
 
-        int moves = 0;
         Queue<Integer> queue = new LinkedList<>();
+        queue.add(0);
+
         boolean[] visited = new boolean[boardsize];
+        int moves = 0;
 
-        queue.add(1);
+        while (!queue.isEmpty()) {
+            int queueSize = queue.size();
 
-        /*        PLAN         */
-        // Do BFS to find the shortest path
-        // Each turn the computer can choose any number betwwen 1 and 6
-        // The computer then moves to the square that is the sum of the current square and the number chosen
-        // And then the computer checks if the square it landed on is a snake or a ladder using the realPaths array
+            while (queueSize > 0) {
+                queueSize--;
 
-        int queueSize = queue.size();
+                int currentSquare = queue.remove();
 
-        while (!(queue.isEmpty())) {
-            // If queueSize is zero, the computer has finished a turn
-            if (queueSize == 0) {
-                moves++;
-                // Reset the queueSize to the new size of the queue
-                queueSize = queue.size();
+                if (currentSquare == boardsize - 1) {
+                    return moves;
+                }
+
+                for (int i = 1; i <= 6; i++) {
+
+                    if (currentSquare + i <= boardsize - 1 && !visited[currentSquare + i - 1]) {
+                        queue.add(realPaths[currentSquare + i]);
+                        visited[currentSquare + i - 1] = true;
+                    }
+                }
+
             }
 
-            // Decrease the queueSize and remove the current square from the queue
-            queueSize--;
-            int currentSquare = queue.remove();
-
-            // Add all possible moves to the queue
-            for (int i = 1; i <= 6; i++) {
-                // Adds the square to the queue if it hasn't been visited
-                if (currentSquare + i < boardsize && !visited[currentSquare + i]) {
-                    queue.add(realPaths[currentSquare + i]);
-                    visited[currentSquare + i] = true;
-                }
-                // Ends the game if the computer lands on the last square
-                else if (currentSquare + i == boardsize) {
-                    return moves + 1;
-                }
-            }
+            moves++;
         }
 
         return -1;
