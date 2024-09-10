@@ -8,32 +8,27 @@ import java.util.Queue;
  * for Adventures in Algorithms
  * at Menlo School in Atherton, CA
  *
- * Completed by: [YOUR NAME HERE]
+ * Completed by: Landon Moceri
  *
  */
 
 public class MokshaPatam {
 
-    /**
-     * TODO: Complete this function, fewestMoves(), to return the minimum number of moves
-     *  to reach the final square on a board with the given size, ladders, and snakes.
-     */
-
     public static int[] formatRealPaths(int boardsize, int[][] ladders, int[][] snakes) {
-        int[] realPaths = new int[boardsize];
-
-        // Add all snakes to realPaths
-        for (int i = 0; i < ladders.length; i++) {
-            realPaths[ladders[i][0]] = ladders[i][1] - 1;
-        }
+        int[] realPaths = new int[boardsize + 1];
 
         // Add all ladders to realPaths
-        for (int i = 0; i < snakes.length; i++) {
-            realPaths[snakes[i][0]] = snakes[i][1] - 1;
+        for (int[] ladder : ladders) {
+            realPaths[ladder[0]] = ladder[1];
         }
 
-        // Add all normal squares to realPaths
-        for (int i = 0; i < boardsize; i++) {
+        // Add all snakes to realPaths
+        for (int[] snake : snakes) {
+            realPaths[snake[0]] = snake[1];
+        }
+
+        // Fill in the rest of the board with the same value as the index
+        for (int i = 1; i <= boardsize; i++) {
             if (realPaths[i] == 0) {
                 realPaths[i] = i;
             }
@@ -47,34 +42,41 @@ public class MokshaPatam {
         // Format snakes and ladders into a single array to reduce the search time to O(1)
         int[] realPaths = formatRealPaths(boardsize, ladders, snakes);
 
+        // Create a BFS queue to store future moves to be checked
         Queue<Integer> queue = new LinkedList<>();
-        queue.add(0);
+        queue.add(1);
 
-        boolean[] visited = new boolean[boardsize];
+        // Create a visited map to keep track of which squares have been visited
+        boolean[] visited = new boolean[boardsize + 1];
+        visited[1] = true;
+
         int moves = 0;
 
+        // If the queue is empty, all possible moves have been checked and no solution exists
         while (!queue.isEmpty()) {
             int queueSize = queue.size();
 
+            // This loop processes one level of the BFS tree at a time
             while (queueSize > 0) {
                 queueSize--;
 
                 int currentSquare = queue.remove();
 
-                if (currentSquare == boardsize - 1) {
+                if (currentSquare == boardsize) {
                     return moves;
                 }
 
+                // Adds all possible moves from the current square to the queue
                 for (int i = 1; i <= 6; i++) {
-
-                    if (currentSquare + i <= boardsize - 1 && !visited[currentSquare + i - 1]) {
-                        queue.add(realPaths[currentSquare + i]);
-                        visited[currentSquare + i - 1] = true;
+                    int nextSquare = currentSquare + i;
+                    if (nextSquare <= boardsize && !visited[nextSquare]) {
+                        // Does not add to queueSize, as these moves are on the next level of the BFS tree
+                        queue.add(realPaths[nextSquare]);
+                        visited[nextSquare] = true;
                     }
                 }
-
             }
-
+            // Once a level of the BFS tree has been processed and no solution found, increment the number of moves
             moves++;
         }
 
